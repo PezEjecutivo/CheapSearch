@@ -1,4 +1,4 @@
-// app/api/scrape/route.ts (or a separate file in your utils directory)
+// /api/trends/route.ts
 import { NextResponse } from "next/server";
 import { chromium } from "playwright";
 
@@ -7,28 +7,23 @@ async function scrapeTrendingGames(url: string) {
     const page = await browser.newPage();
 
     try {
+        console.log("Navigating to URL:", url);
         await page.goto(url, { timeout: 30000 });
+        console.log("Page loaded");
 
-        // Locate the search listing items container
         const listingItems = page.locator("div.search.listing-items");
-
-        // Find all the 'div' elements with class 'item force-badge' within the
-        // container
         const gameItems = await listingItems.locator("div.item.force-badge").all();
+        console.log("Found game items:", gameItems.length);
 
         const games = [];
-        const maxGamesToScrape = 3; // Limit to the first 3 games
+        const maxGamesToScrape = 3;
 
         for (let i = 0; i < Math.min(gameItems.length, maxGamesToScrape); i++) {
-            const item = gameItems[i]; // Get the current game item
+            const item = gameItems[i];
             try {
-                // Locate the 'a' element with the specified class within the current
-                // 'item force-badge' div
                 const linkElement = await item.locator("a.cover.video.is-playable.played");
                 const href = await linkElement.getAttribute("href");
 
-                // Locate the 'span' element with class 'title' within the current 'item
-                // force-badge' div
                 const titleElement = await item.locator("span.title");
                 const title = await titleElement.textContent({ timeout: 5000 });
 
@@ -44,7 +39,6 @@ async function scrapeTrendingGames(url: string) {
         }
 
         await browser.close();
-
         return games;
     } catch (error: any) {
         console.error("Scraping failed:", error);
@@ -54,8 +48,7 @@ async function scrapeTrendingGames(url: string) {
 }
 
 export async function GET(request: Request) {
-    const url = "https://www.instant-gaming.com/es/tendencias/"; // Hardcoded URL
-    // No need for query parameter
+    const url = "https://www.instant-gaming.com/es/tendencias/";
 
     try {
         const data = await scrapeTrendingGames(url);
