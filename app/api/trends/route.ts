@@ -7,13 +7,10 @@ async function scrapeTrendingGames(url: string) {
     const page = await browser.newPage();
 
     try {
-        console.log("Navigating to URL:", url);
         await page.goto(url, { timeout: 30000 });
-        console.log("Page loaded");
 
         const listingItems = page.locator("div.search.listing-items");
         const gameItems = await listingItems.locator("div.item.force-badge").all();
-        console.log("Found game items:", gameItems.length);
 
         const games = [];
         const maxGamesToScrape = 3;
